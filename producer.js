@@ -18,22 +18,21 @@ async function init() {
 
   rl.on("line", async function (line) {
     const [riderName, location] = line.split(" ");
-  })
-
-
-  await producer.send({
-    topic: "rider-updates",
-    messages: [
-      {
-        partition: 0,
-        key: "location-updates",
-        value: JSON.stringify({ name: "Rider 1", location: "12345" }),
-      },
-    ],
+    await producer.send({
+      topic: "rider-updates",
+      messages: [
+        {
+          partition: location.toLowerCase() === 'north' ? 0 : 1,
+          key: "location-updates",
+          value: JSON.stringify({ name: riderName, location }),
+        },
+      ],
+    });
+  }).on("close", async () => {
+    console.log("closing..");
+    await producer.disconnect();
   });
 
-  console.log("producer send done..");
 
-  await producer.disconnect();
 }
 init();
